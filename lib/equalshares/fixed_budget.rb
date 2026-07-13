@@ -85,11 +85,13 @@ module Equalshares
             next
           end
 
-          # Effective vote count: split the cost of c as equally as possible among approvers.
-          approvers[c].sort_by! { |i| budget[i] }
+          # Effective vote count: split the cost of c as equally as possible among
+          # approvers. Sort a copy by budget so the instance's approver order is not
+          # mutated during computation.
+          supporters_by_budget = approvers[c].sort_by { |i| budget[i] }
           paid_so_far = 0
-          denominator = approvers[c].length # number of approvers who can afford the max payment
-          approvers[c].each do |i|
+          denominator = supporters_by_budget.length # approvers who can afford the max payment
+          supporters_by_budget.each do |i|
             max_payment = (cost[c] - paid_so_far) / denominator # if remaining approvers pay equally
             if max_payment > budget[i]
               # i cannot afford the max payment, so pays entire remaining budget
@@ -121,13 +123,7 @@ module Equalshares
           break
         end
 
-        best = Tie.break_ties(project_ids, cost, approvers, params, best)
-        if best.length > 1
-          raise ComputeError,
-                "Tie-breaking failed: tie between projects #{best.join(', ')} could not be resolved. " \
-                "Another tie-breaking needs to be added."
-        end
-        best = best[0]
+        best = Tie.resolve_one(project_ids, cost, approvers, params, best)
         winners << best
         progress&.call((100 * winners.sum { |c| cost[c] } / b_total).floor)
 

@@ -32,7 +32,7 @@ module Equalshares
           break if available.empty?
 
           argmin = argmin_by_load(available, winners, cost, approvers)
-          selected = break_tie(argmin, cost, approvers)
+          selected = Tie.resolve_one(project_ids, cost, approvers, params, argmin)
 
           winners << selected
           remaining_budget -= cost[selected]
@@ -57,15 +57,6 @@ module Equalshares
           end
         end
         argmin
-      end
-
-      def break_tie(argmin, cost, approvers)
-        selected = Tie.break_ties(election.project_ids, cost, approvers, params, argmin)
-        if selected.length > 1
-          raise ComputeError,
-                "Tie-breaking failed: tie between projects #{selected.join(', ')} could not be resolved."
-        end
-        selected[0]
       end
 
       # Minimum achievable maximum voter load for the committee, in exact rationals.

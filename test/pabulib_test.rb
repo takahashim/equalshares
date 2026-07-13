@@ -72,6 +72,13 @@ class PabulibTest < Minitest::Test
     assert_raises(Equalshares::ParseError) { Equalshares::Pabulib.parse_from_string(text) }
   end
 
+  def test_short_project_row_raises_parse_error_not_no_method_error
+    # project_id is not the first column, and the row is missing it entirely.
+    text = "META\nkey;value\nbudget;100\nPROJECTS\ncost;project_id\n40\nVOTES\nvoter_id;vote\nv1;\n"
+    err = assert_raises(Equalshares::ParseError) { Equalshares::Pabulib.parse_from_string(text) }
+    assert_match(/Invalid number of columns/, err.message)
+  end
+
   def test_write_string_round_trips
     Dir[File.join(TestSupport::REPO_ROOT, "test/fixtures/pb/*.pb")].each do |path|
       original = Equalshares::Pabulib.parse_file(path)

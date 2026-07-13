@@ -36,7 +36,7 @@ module Equalshares
           argmin = argmin_by_affordability(remaining, approvers, budget, util, cost)
           break if argmin.empty?
 
-          selected = break_tie(argmin, cost, approvers)
+          selected = Tie.resolve_one(project_ids, cost, approvers, params, argmin)
           charge(selected, approvers, budget, util, cost)
           winners << selected
           remaining.delete(selected)
@@ -75,15 +75,6 @@ module Equalshares
           payment = rho * util[selected][i]
           budget[i] = budget[i] > payment ? budget[i] - payment : zero
         end
-      end
-
-      def break_tie(argmin, cost, approvers)
-        selected = Tie.break_ties(election.project_ids, cost, approvers, params, argmin)
-        if selected.length > 1
-          raise ComputeError,
-                "Tie-breaking failed: tie between projects #{selected.join(', ')} could not be resolved."
-        end
-        selected[0]
       end
 
       # The "poor/rich" affordability factor rho: minimal rho such that

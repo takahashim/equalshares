@@ -31,7 +31,7 @@ module Equalshares
           # Stop as soon as the next project to be bought would violate the budget.
           break if argmin.any? { |c| current_cost + cost[c] > budget_limit }
 
-          selected = break_tie(argmin, cost, approvers)
+          selected = Tie.resolve_one(project_ids, cost, approvers, params, argmin)
           approvers[selected].each { |i| loads[i] = min_maxload }
           winners << selected
           current_cost += cost[selected]
@@ -62,15 +62,6 @@ module Equalshares
           end
         end
         [min_maxload, argmin]
-      end
-
-      def break_tie(argmin, cost, approvers)
-        selected = Tie.break_ties(election.project_ids, cost, approvers, params, argmin)
-        if selected.length > 1
-          raise ComputeError,
-                "Tie-breaking failed: tie between projects #{selected.join(', ')} could not be resolved."
-        end
-        selected[0]
       end
     end
   end

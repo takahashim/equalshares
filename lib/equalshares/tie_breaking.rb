@@ -20,6 +20,18 @@ module Equalshares
       remaining
     end
 
+    # Resolve a tie down to a single winner, raising if the tie-breaking rules leave
+    # more than one candidate. Used by the sequential rules.
+    def resolve_one(project_ids, cost, approvers, params, choices)
+      resolved = break_ties(project_ids, cost, approvers, params, choices)
+      if resolved.length > 1
+        raise ComputeError,
+              "Tie-breaking failed: tie between projects #{resolved.join(', ')} could not be resolved. " \
+              "Another tie-breaking needs to be added."
+      end
+      resolved[0]
+    end
+
     # A total order of all projects induced by params.tie_breaking, used by rules that
     # need a full ordering (e.g. greedy welfare). Projects are sorted by each strategy's
     # sort key in priority order, falling back to their original (JS Object.keys) order.

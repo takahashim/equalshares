@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require "optparse"
-require "json"
-require "csv"
+
+require_relative "cli/formatter"
 
 module Equalshares
   # Command-line interface: parse a .pb file and print the Method of Equal Shares outcome.
@@ -11,7 +11,14 @@ module Equalshares
       new.run(argv)
     end
 
-    RULES = %w[mes phragmen greedy maximin].freeze
+    # Each rule name maps to a runner (instance, params, progress) -> Result.
+    RULE_RUNNERS = {
+      "mes" => ->(instance, params, progress) { Compute.equal_shares(instance, params, progress: progress) },
+      "phragmen" => ->(instance, params, progress) { Phragmen.sequential(instance, params, progress: progress) },
+      "greedy" => ->(instance, params, _progress) { Greedy.utilitarian_welfare(instance, params) },
+      "maximin" => ->(instance, params, progress) { Maximin.support(instance, params, progress: progress) }
+    }.freeze
+    RULES = RULE_RUNNERS.keys.freeze
 
     def run(argv)
       options = { format: "human", progress: false, rule: "mes" }
@@ -28,16 +35,10 @@ module Equalshares
       progress = options[:progress] ? ->(pct) { warn "\rComputing... #{pct}%" } : nil
 
       instance = Pabulib.parse_file(files.first)
-      result =
-        case options[:rule]
-        when "phragmen" then Phragmen.sequential(instance, params, progress: progress)
-        when "greedy" then Greedy.utilitarian_welfare(instance, params)
-        when "maximin" then Maximin.support(instance, params, progress: progress)
-        else Compute.equal_shares(instance, params, progress: progress)
-        end
+      result = RULE_RUNNERS.fetch(options[:rule]).call(instance, params, progress)
       warn "" if options[:progress]
 
-      emit(options[:format], instance, result)
+      print Formatter.new(instance, result).render(options[:format])
       0
     rescue OptionParser::ParseError => e
       warn "Error: #{e.message}"
@@ -94,65 +95,6 @@ module Equalshares
           exit 0
         end
       end
-    end
-
-    def emit(format, instance, result)
-      case format
-      when "json" then emit_json(result)
-      when "csv"  then emit_csv(instance, result)
-      else             emit_human(instance, result)
-      end
-    end
-
-    def emit_json(result)
-      puts JSON.pretty_generate(result.to_h)
-    end
-
-    def emit_csv(instance, result)
-      out = CSV.generate do |csv|
-        csv << %w[project_id name cost votes effective_vote_count]
-        result.winners.each do |c|
-          csv << [c, instance.projects[c]["name"], instance.projects[c]["cost"],
-                  instance.approvers[c].length, result.effective_vote_count(c)]
-        end
-      end
-      print out
-    end
-
-    def emit_human(instance, result)
-      stats = result.stats
-      winners = result.winners
-      puts "Winners: #{winners.length} projects, total cost #{format_number(result.total_cost)} " \
-           "of budget #{instance.budget}"
-      puts "Voter endowment: #{format_number(result.endowment)}" if result.endowment
-      puts "Avg. approved winning projects per voter: #{stats[:avg_approved_projects].round(3)}"
-      puts "Computation time: #{result.time}s"
-      puts
-
-      rows = winners.map do |c|
-        [c, truncate(instance.projects[c]["name"], 50), instance.projects[c]["cost"],
-         instance.approvers[c].length.to_s, format_number(result.effective_vote_count(c))]
-      end
-      print_table(%w[id name cost votes eff.votes], rows)
-    end
-
-    def print_table(headers, rows)
-      widths = headers.each_index.map do |i|
-        ([headers[i]] + rows.map { |r| r[i].to_s }).map(&:length).max
-      end
-      line = ->(cells) { cells.each_index.map { |i| cells[i].to_s.ljust(widths[i]) }.join("  ") }
-      puts line.call(headers)
-      puts widths.map { |w| "-" * w }.join("  ")
-      rows.each { |r| puts line.call(r) }
-    end
-
-    def truncate(str, max)
-      str.to_s.length > max ? "#{str[0, max - 1]}…" : str.to_s
-    end
-
-    def format_number(value)
-      f = value.to_f
-      f == f.round ? f.round.to_s : f.round(2).to_s
     end
   end
 end
