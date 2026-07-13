@@ -1,0 +1,51 @@
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - "vendor/**/*"
+    - "bin/**/*"
+
+# The core algorithm is a faithful port of a procedural JS implementation;
+# some methods are intrinsically long and complex.
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Layout/LineLength:
+  Max: 120
+
+# Parameter lists in core algorithm and parser files are inherent to the port
+Metrics/ParameterLists:
+  Exclude:
+    - "lib/equalshares/fixed_budget.rb"
+    - "lib/equalshares/compute.rb"
+    - "lib/equalshares/completion.rb"
+    - "lib/equalshares/comparison.rb"
+    - "lib/equalshares/statistics.rb"
+    - "lib/equalshares/tie_breaking.rb"
+    - "lib/equalshares/pabulib.rb"
+    - "lib/equalshares/params.rb"

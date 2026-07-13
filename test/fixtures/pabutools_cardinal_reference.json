@@ -1,0 +1,72 @@
+{
+  "test/fixtures/pb_cardinal/synthetic_cumulative.pb": {
+    "lexico_order": [
+      "p1",
+      "p10",
+      "p11",
+      "p12",
+      "p2",
+      "p3",
+      "p4",
+      "p5",
+      "p6",
+      "p7",
+      "p8",
+      "p9"
+    ],
+    "winners": [
+      "p10",
+      "p2",
+      "p5",
+      "p7"
+    ]
+  },
+  "test/fixtures/pb_cardinal/synthetic_scoring.pb": {
+    "lexico_order": [
+      "p1",
+      "p10",
+      "p2",
+      "p3",
+      "p4",
+      "p5",
+      "p6",
+      "p7",
+      "p8",
+      "p9"
+    ],
+    "winners": [
+      "p1",
+      "p10",
+      "p4",
+      "p7"
+    ]
+  },
+  "test/fixtures/pb_cardinal/synthetic_scoring_2.pb": {
+    "lexico_order": [
+      "p1",
+      "p10",
+      "p11",
+      "p12",
+      "p13",
+      "p14",
+      "p15",
+      "p2",
+      "p3",
+      "p4",
+      "p5",
+      "p6",
+      "p7",
+      "p8",
+      "p9"
+    ],
+    "winners": [
+      "p10",
+      "p11",
+      "p12",
+      "p13",
+      "p7",
+      "p8",
+      "p9"
+    ]
+  }
+}
