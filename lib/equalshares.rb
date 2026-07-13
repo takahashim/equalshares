@@ -12,9 +12,19 @@ require_relative "equalshares/election"
 require_relative "equalshares/fixed_budget"
 require_relative "equalshares/completion"
 require_relative "equalshares/comparison"
+require_relative "equalshares/max_flow"
+
+# Rule objects
+require_relative "equalshares/rules/base"
+require_relative "equalshares/rules/method_of_equal_shares"
+require_relative "equalshares/rules/cardinal_mes"
+require_relative "equalshares/rules/phragmen"
+require_relative "equalshares/rules/greedy"
+require_relative "equalshares/rules/maximin"
+
+# Facades over the rule objects (stable public API)
 require_relative "equalshares/phragmen"
 require_relative "equalshares/greedy"
-require_relative "equalshares/max_flow"
 require_relative "equalshares/maximin"
 require_relative "equalshares/mes_general"
 require_relative "equalshares/compute"
