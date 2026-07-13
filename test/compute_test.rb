@@ -14,12 +14,12 @@ class ComputeTest < Minitest::Test
       result = Equalshares::Compute.equal_shares(sample_instance, params)
       expected = data["result"]
 
-      assert_equal expected["winners"], result[:winners], "winners mismatch for #{name}"
+      assert_equal expected["winners"], result.winners, "winners mismatch for #{name}"
 
-      stats = result[:notes][:stats]
+      stats = result.stats
       assert_in_delta expected["totalCost"], stats[:total_cost].to_f, 1e-6, "total_cost #{name}"
       assert_in_delta expected["avgApprovedProjects"], stats[:avg_approved_projects].to_f, 1e-9, "avg #{name}"
-      assert_in_delta expected["endowment"], result[:notes][:endowment].to_f, 1e-9, "endowment #{name}"
+      assert_in_delta expected["endowment"], result.endowment.to_f, 1e-9, "endowment #{name}"
 
       expected["utilityDistribution"].each do |util, count|
         assert_equal count, stats[:utility_distribution][util.to_i], "utility[#{util}] #{name}"
@@ -36,13 +36,13 @@ class ComputeTest < Minitest::Test
       fractions = Equalshares::Compute.equal_shares(
         sample_instance, Equalshares::Params.new(completion: completion, accuracy: "fractions")
       )
-      assert_equal floats[:winners], fractions[:winners], "winner mismatch for completion=#{completion}"
+      assert_equal floats.winners, fractions.winners, "winner mismatch for completion=#{completion}"
     end
   end
 
   def test_reports_computation_time
     result = Equalshares::Compute.equal_shares(sample_instance, Equalshares::Params.new(completion: "none"))
-    assert_match(/\A\d+\.\d\z/, result[:notes][:time])
+    assert_match(/\A\d+\.\d\z/, result.time)
   end
 
   def test_invalid_params_raise

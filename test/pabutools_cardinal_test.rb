@@ -36,9 +36,9 @@ class PabutoolsCardinalTest < Minitest::Test
       direct = Equalshares::MesGeneral.equal_shares(instance, params)
       delegated = Equalshares::Compute.equal_shares(instance, params)
 
-      assert_equal expected["winners"].sort, direct[:winners].sort,
+      assert_equal expected["winners"].sort, direct.winners.sort,
                    "cardinal MES winner set mismatch vs pabutools for #{rel_path}"
-      assert_equal direct[:winners].sort, delegated[:winners].sort,
+      assert_equal direct.winners.sort, delegated.winners.sort,
                    "Compute delegation differs from MesGeneral for #{rel_path}"
     end
   end

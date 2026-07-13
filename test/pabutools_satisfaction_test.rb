@@ -31,7 +31,7 @@ class PabutoolsSatisfactionTest < Minitest::Test
           tie_breaking: [{ lexico: expected["lexico_order"] }]
         )
         result = Equalshares::Compute.equal_shares(instance, params)
-        assert_equal expected[measure].sort, result[:winners].sort,
+        assert_equal expected[measure].sort, result.winners.sort,
                      "#{measure} winner set mismatch vs pabutools for #{rel_path}"
       end
     end

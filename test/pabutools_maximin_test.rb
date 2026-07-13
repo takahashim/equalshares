@@ -25,7 +25,7 @@ class PabutoolsMaximinTest < Minitest::Test
       instance = Equalshares::Pabulib.parse_file(File.join(REPO_ROOT, rel_path))
       params = Equalshares::Params.new(tie_breaking: [{ lexico: expected["lexico_order"] }])
       result = Equalshares::Maximin.support(instance, params)
-      assert_equal expected["winners"].sort, result[:winners].sort,
+      assert_equal expected["winners"].sort, result.winners.sort,
                    "maximin winner set mismatch vs pabutools for #{rel_path}"
     end
   end

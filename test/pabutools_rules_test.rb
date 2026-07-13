@@ -23,7 +23,7 @@ class PabutoolsRulesTest < Minitest::Test
       instance = Equalshares::Pabulib.parse_file(File.join(REPO_ROOT, rel_path))
       params = Equalshares::Params.new(accuracy: "fractions", tie_breaking: [{ lexico: expected["lexico_order"] }])
       result = Equalshares::Phragmen.sequential(instance, params)
-      assert_equal expected["phragmen"].sort, result[:winners].sort,
+      assert_equal expected["phragmen"].sort, result.winners.sort,
                    "phragmen winner set mismatch vs pabutools for #{rel_path}"
     end
   end
@@ -37,7 +37,7 @@ class PabutoolsRulesTest < Minitest::Test
           tie_breaking: [{ lexico: expected["lexico_order"] }]
         )
         result = Equalshares::Greedy.utilitarian_welfare(instance, params)
-        assert_equal expected["greedy_#{measure}"].sort, result[:winners].sort,
+        assert_equal expected["greedy_#{measure}"].sort, result.winners.sort,
                      "greedy(#{measure}) winner set mismatch vs pabutools for #{rel_path}"
       end
     end

@@ -105,39 +105,35 @@ module Equalshares
     end
 
     def emit_json(result)
-      puts JSON.pretty_generate(winners: result[:winners], notes: result[:notes])
+      puts JSON.pretty_generate(result.to_h)
     end
 
     def emit_csv(instance, result)
       out = CSV.generate do |csv|
         csv << %w[project_id name cost votes effective_vote_count]
-        result[:winners].each do |c|
+        result.winners.each do |c|
           csv << [c, instance.projects[c]["name"], instance.projects[c]["cost"],
-                  instance.approvers[c].length, effective_vote_count(result, c)]
+                  instance.approvers[c].length, result.effective_vote_count(c)]
         end
       end
       print out
     end
 
     def emit_human(instance, result)
-      stats = result[:notes][:stats]
-      winners = result[:winners]
-      puts "Winners: #{winners.length} projects, total cost #{format_number(stats[:total_cost])} " \
+      stats = result.stats
+      winners = result.winners
+      puts "Winners: #{winners.length} projects, total cost #{format_number(result.total_cost)} " \
            "of budget #{instance.budget}"
-      puts "Voter endowment: #{format_number(result[:notes][:endowment])}" if result[:notes][:endowment]
+      puts "Voter endowment: #{format_number(result.endowment)}" if result.endowment
       puts "Avg. approved winning projects per voter: #{stats[:avg_approved_projects].round(3)}"
-      puts "Computation time: #{result[:notes][:time]}s"
+      puts "Computation time: #{result.time}s"
       puts
 
       rows = winners.map do |c|
         [c, truncate(instance.projects[c]["name"], 50), instance.projects[c]["cost"],
-         instance.approvers[c].length.to_s, format_number(effective_vote_count(result, c))]
+         instance.approvers[c].length.to_s, format_number(result.effective_vote_count(c))]
       end
       print_table(%w[id name cost votes eff.votes], rows)
-    end
-
-    def effective_vote_count(result, project_id)
-      ((result[:notes][:effective_vote_count] || {})[project_id] || []).last
     end
 
     def print_table(headers, rows)

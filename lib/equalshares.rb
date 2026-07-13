@@ -13,6 +13,7 @@ require_relative "equalshares/fixed_budget"
 require_relative "equalshares/completion"
 require_relative "equalshares/comparison"
 require_relative "equalshares/max_flow"
+require_relative "equalshares/result"
 
 # Rule objects
 require_relative "equalshares/rules/base"

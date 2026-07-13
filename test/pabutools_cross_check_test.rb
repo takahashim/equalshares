@@ -33,9 +33,9 @@ class PabutoolsCrossCheckTest < Minitest::Test
       )
       result = Equalshares::Compute.equal_shares(instance, params)
 
-      assert_equal expected["winners"].sort, result[:winners].sort,
+      assert_equal expected["winners"].sort, result.winners.sort,
                    "winner set mismatch vs pabutools for #{rel_path}"
-      assert_equal expected["total_cost"], result[:notes][:stats][:total_cost].round,
+      assert_equal expected["total_cost"], result.total_cost.round,
                    "total cost mismatch vs pabutools for #{rel_path}"
     end
   end

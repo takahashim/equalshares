@@ -40,12 +40,12 @@ class PbRegressionTest < Minitest::Test
       result = Equalshares::Compute.equal_shares(instance_for(data["fixture"]), params)
       expected = data["result"]
 
-      assert_equal expected["winners"], result[:winners], "winners mismatch for #{key}"
+      assert_equal expected["winners"], result.winners, "winners mismatch for #{key}"
 
-      stats = result[:notes][:stats]
+      stats = result.stats
       assert_in_delta expected["totalCost"], stats[:total_cost].to_f, 1e-4, "total_cost #{key}"
       assert_in_delta expected["avgApprovedProjects"], stats[:avg_approved_projects].to_f, 1e-9, "avg #{key}"
-      assert_in_delta expected["endowment"], result[:notes][:endowment].to_f, 1e-6, "endowment #{key}"
+      assert_in_delta expected["endowment"], result.endowment.to_f, 1e-6, "endowment #{key}"
 
       expected["utilityDistribution"].each do |util, count|
         assert_equal count, stats[:utility_distribution][util.to_i], "utility[#{util}] #{key}"

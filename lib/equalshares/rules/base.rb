@@ -32,12 +32,12 @@ module Equalshares
         Process.clock_gettime(Process::CLOCK_MONOTONIC)
       end
 
-      # Build the result hash, adding outcome statistics and elapsed time to any
+      # Build the Result, adding outcome statistics and elapsed time to any
       # rule-specific notes.
       def result(winners, since, extra_notes = {})
         notes = extra_notes.merge(stats: election.statistics(winners),
                                   time: format("%.1f", now - since))
-        { winners: winners, notes: notes }
+        Result.new(winners: winners, notes: notes)
       end
     end
   end
