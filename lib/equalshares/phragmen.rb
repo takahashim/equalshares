@@ -14,13 +14,12 @@ module Equalshares
     def sequential(instance, params = Params.new, progress: nil)
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-      voter_ids = instance.voter_ids
-      project_ids = instance.project_ids
-      approvers = instance.approvers
-      exact = params.accuracy == "fractions"
+      election = Election.new(instance, params)
+      project_ids = election.project_ids
+      approvers = election.approvers
 
-      cost = project_ids.to_h { |c| [c, numeric(instance.projects[c]["cost"], exact)] }
-      budget_limit = numeric(instance.budget, exact)
+      cost = election.costs
+      budget_limit = election.budget
       approval_score = project_ids.to_h { |c| [c, approvers[c].length] }
 
       loads = Hash.new(0) # voter id -> current load
@@ -65,16 +64,11 @@ module Equalshares
         progress&.call((100 * current_cost / budget_limit).floor)
       end
 
-      cost_float = project_ids.to_h { |c| [c, Float(instance.projects[c]["cost"])] }
-      notes = { stats: Statistics.gather(voter_ids, cost_float, approvers, winners) }
+      notes = { stats: election.statistics(winners) }
       end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       notes[:time] = format("%.1f", end_time - start_time)
 
       { winners: winners, notes: notes }
-    end
-
-    def numeric(value, exact)
-      exact ? FixedBudget.to_rational(value) : Float(value)
     end
   end
 end

@@ -18,17 +18,16 @@ module Equalshares
               "MesGeneral applies to instances with per-voter scores (scoring/cumulative/ordinal)"
       end
 
-      voter_ids = instance.voter_ids
-      project_ids = instance.project_ids
-      approvers = instance.approvers
-      exact = params.accuracy == "fractions"
+      election = Election.new(instance, params)
+      voter_ids = election.voter_ids
+      project_ids = election.project_ids
+      approvers = election.approvers
       n = voter_ids.length
 
-      cost = project_ids.to_h { |c| [c, num(instance.projects[c]["cost"], exact)] }
-      budget_limit = num(instance.budget, exact)
-      util = project_ids.to_h do |c|
-        [c, (instance.scores[c] || {}).transform_values { |s| num(s, exact) }]
-      end
+      cost = election.costs
+      budget_limit = election.budget
+      util = project_ids.to_h { |c| [c, election.utilities(c)] }
+      exact = election.exact?
 
       budget = {}
       voter_ids.each { |i| budget[i] = budget_limit / n } # endowment B/|N|
@@ -78,8 +77,7 @@ module Equalshares
         progress&.call((100 * winners.sum { |c| cost[c] } / budget_limit).floor)
       end
 
-      cost_float = project_ids.to_h { |c| [c, Float(instance.projects[c]["cost"])] }
-      notes = { stats: Statistics.gather(voter_ids, cost_float, approvers, winners) }
+      notes = { stats: election.statistics(winners) }
       end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       notes[:time] = format("%.1f", end_time - start_time)
 
@@ -101,10 +99,6 @@ module Equalshares
         poor_budget += new_poor.sum { |i| budget[i] }
         rich -= new_poor
       end
-    end
-
-    def num(value, exact)
-      exact ? FixedBudget.to_rational(value) : Float(value)
     end
   end
 end

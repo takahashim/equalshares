@@ -23,8 +23,8 @@ module Equalshares
             report_details: false, progress: nil)
       case params.accuracy
       when "fractions"
-        cost = cost_source.transform_values { |c| to_rational(c) }
-        b_total = to_rational(budget_source)
+        cost = cost_source.transform_values { |c| Election.to_rational(c) }
+        b_total = Election.to_rational(budget_source)
       when "floats"
         cost = cost_source.transform_values { |c| Float(c) }
         b_total = Float(budget_source)
@@ -140,14 +140,6 @@ module Equalshares
       end
 
       { winners: winners, report: report }
-    end
-
-    # Convert a cost/budget string to an exact Rational, matching fraction.js's
-    # decimal handling (e.g. "5000" -> 5000, "5000.5" -> 10001/2).
-    def to_rational(value)
-      Rational(value.to_s)
-    rescue ArgumentError
-      Float(value).to_r
     end
 
     # Additive identity in the same numeric family as the budget (0 or 0.0).

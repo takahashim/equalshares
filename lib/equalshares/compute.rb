@@ -23,25 +23,27 @@ module Equalshares
 
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-      voter_ids = instance.voter_ids
-      project_ids = instance.project_ids
+      election = Election.new(instance, params)
+      voter_ids = election.voter_ids
+      project_ids = election.project_ids
+      approvers = election.approvers
 
+      # Costs/budget as strings for the MES loop (it wraps them per accuracy) and as
+      # floats for the completion/comparison/statistics bookkeeping (as the JS does).
       cost_source = project_ids.to_h { |c| [c, instance.projects[c]["cost"]] }
       budget_source = instance.budget
-
-      # Float views used at this level (mirrors parseFloat in the JS).
-      cost = cost_source.transform_values { |c| Float(c) }
-      b_float = Float(budget_source)
+      cost = election.float_costs
+      b_float = election.float_budget
 
       everything_affordable = cost.values.sum <= b_float
 
       result =
         if %w[none utilitarian].include?(params.completion) || everything_affordable
           # don't use Add1 if everything is affordable
-          FixedBudget.run(voter_ids, project_ids, cost_source, approvers(instance), budget_source, params,
+          FixedBudget.run(voter_ids, project_ids, cost_source, approvers, budget_source, params,
                           report_details: true, progress: progress)
         elsif ADD1_COMPLETIONS.include?(params.completion)
-          Completion.add1(voter_ids, project_ids, cost_source, approvers(instance), budget_source, params,
+          Completion.add1(voter_ids, project_ids, cost_source, approvers, budget_source, params,
                           progress: progress)
         else
           raise ComputeError, "Unknown completion rule: #{params.completion}"
@@ -57,15 +59,15 @@ module Equalshares
 
       # utilitarian completion if needed
       if UTILITARIAN_COMPLETIONS.include?(params.completion)
-        completion_result = Completion.utilitarian(voter_ids, project_ids, cost, approvers(instance), b_float, winners)
+        completion_result = Completion.utilitarian(voter_ids, project_ids, cost, approvers, b_float, winners)
         winners = completion_result.fetch(:winners)
         notes[:added_by_utilitarian_completion] = completion_result.fetch(:added)
       end
 
       # comparison step
-      greedy = Completion.utilitarian(voter_ids, project_ids, cost, approvers(instance), b_float, []).fetch(:winners)
+      greedy = Completion.utilitarian(voter_ids, project_ids, cost, approvers, b_float, []).fetch(:winners)
       unless params.comparison == "none"
-        cmp = Comparison.comparison_step(voter_ids, approvers(instance), greedy, winners, params)
+        cmp = Comparison.comparison_step(voter_ids, approvers, greedy, winners, params)
         unless cmp[:stick_to_mes]
           winners = greedy
           notes[:comparison] =
@@ -74,19 +76,13 @@ module Equalshares
         end
       end
 
-      notes[:stats] = Statistics.gather(voter_ids, cost, approvers(instance), winners)
-      notes[:greedy_stats] = Statistics.gather(voter_ids, cost, approvers(instance), greedy)
+      notes[:stats] = election.statistics(winners)
+      notes[:greedy_stats] = election.statistics(greedy)
 
       end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       notes[:time] = format("%.1f", end_time - start_time)
 
       { winners: winners, notes: notes }
-    end
-
-    # The algorithm mutates approvers[c] (in-place sort in the MES loop), so hand it
-    # the instance's own map — matching the JS which also mutates instance.approvers.
-    def approvers(instance)
-      instance.approvers
     end
   end
 end

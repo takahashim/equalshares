@@ -17,14 +17,13 @@ module Equalshares
     def utilitarian_welfare(instance, params = Params.new)
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-      voter_ids = instance.voter_ids
-      project_ids = instance.project_ids
-      approvers = instance.approvers
+      election = Election.new(instance, params)
+      project_ids = election.project_ids
+      approvers = election.approvers
       sat = Satisfaction.for(params.satisfaction)
-      exact = params.accuracy == "fractions"
 
-      cost = project_ids.to_h { |c| [c, Phragmen.numeric(instance.projects[c]["cost"], exact)] }
-      budget_limit = Phragmen.numeric(instance.budget, exact)
+      cost = election.costs
+      budget_limit = election.budget
 
       density = lambda do |c|
         total_sat = sat.call(cost[c], approvers[c].length) * approvers[c].length
@@ -49,8 +48,7 @@ module Equalshares
         remaining_budget -= cost[c]
       end
 
-      cost_float = project_ids.to_h { |c| [c, Float(instance.projects[c]["cost"])] }
-      notes = { stats: Statistics.gather(voter_ids, cost_float, approvers, winners) }
+      notes = { stats: election.statistics(winners) }
       end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       notes[:time] = format("%.1f", end_time - start_time)
 

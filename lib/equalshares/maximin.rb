@@ -19,9 +19,10 @@ module Equalshares
     def support(instance, params = Params.new, progress: nil)
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-      voter_ids = instance.voter_ids
-      project_ids = instance.project_ids
-      approvers = instance.approvers
+      election = Election.new(instance, params)
+      project_ids = election.project_ids
+      approvers = election.approvers
+      # maximin needs integer costs to scale the max-flow network exactly.
       cost = project_ids.to_h { |c| [c, integer_cost(instance.projects[c]["cost"])] }
       budget_limit = integer_cost(instance.budget)
 
@@ -57,8 +58,7 @@ module Equalshares
         progress&.call((100 * winners.sum { |c| cost[c] } / budget_limit).floor)
       end
 
-      cost_float = project_ids.to_h { |c| [c, Float(instance.projects[c]["cost"])] }
-      notes = { stats: Statistics.gather(voter_ids, cost_float, approvers, winners) }
+      notes = { stats: election.statistics(winners) }
       end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       notes[:time] = format("%.1f", end_time - start_time)
 
