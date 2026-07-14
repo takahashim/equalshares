@@ -1,9 +1,7 @@
 # Equalshares
 
-A Ruby implementation of the [equalshares.net](https://equalshares.net/tools/compute/)
-compute tool for participatory budgeting. It parses [pabulib](http://pabulib.org/) `.pb`
-files and computes winning projects using the **Method of Equal Shares** and related
-rules.
+A Ruby implementation of the [equalshares.net](https://equalshares.net/tools/compute/) compute tool for participatory budgeting.
+It parses [pabulib](http://pabulib.org/) `.pb` files and computes winning projects using the [Method of Equal Shares](https://equalshares.net/) and related rules.
 
 This started as a faithful port of the vanilla-JavaScript
 [equalshares-compute-tool](https://github.com/equalshares/equalshares-compute-tool)
@@ -27,14 +25,13 @@ Highlights:
 Install from git (or build the gem locally):
 
 ```bash
-gem install specific_install
-gem specific_install https://github.com/takahashim/equalshares.git
+gem install equalshares
 ```
 
 or add to a Gemfile:
 
 ```ruby
-gem "equalshares", git: "https://github.com/takahashim/equalshares.git"
+gem "equalshares"
 ```
 
 ## Command line
