@@ -17,7 +17,7 @@ module Equalshares
         per_voter = (b / n).floor
         start_budget = per_voter * n
       end
-      start_budget = to_number(start_budget)
+      start_budget = parse_number(start_budget)
 
       # The virtual budget is raised in steps of `step`. The linear scan (as in the JS tool)
       # stops at the first step whose outcome is either exhaustive (if enabled) or exceeds the
@@ -34,10 +34,10 @@ module Equalshares
         memo[k] ||= begin
           winners = FixedBudget.run(voter_ids, project_ids, cost_source, approvers,
                                     start_budget + (k * step), params).fetch(:winners)
-          step_cost = winners.sum { |c| cost_float(cost_source, c) }
+          step_cost = winners.sum { |c| float_cost(cost_source, c) }
           exhaustive = exhaustive_enabled &&
                        project_ids.none? do |extra|
-                         !winners.include?(extra) && step_cost + cost_float(cost_source, extra) <= b
+                         !winners.include?(extra) && step_cost + float_cost(cost_source, extra) <= b
                        end
           progress&.call((100 * [step_cost, b].min / b).floor)
           { winners: winners, cost: step_cost, exhaustive: exhaustive }
@@ -92,12 +92,12 @@ module Equalshares
       { winners: winners, added: added }
     end
 
-    def cost_float(cost_source, cost_id)
+    def float_cost(cost_source, cost_id)
       Float(cost_source[cost_id])
     end
 
     # Preserve integer budgets (Add1 increments are integral); fall back to float.
-    def to_number(value)
+    def parse_number(value)
       Integer(value.to_s)
     rescue ArgumentError, TypeError
       Float(value)

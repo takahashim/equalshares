@@ -63,12 +63,12 @@ module Equalshares
 
     # Convert a cost/budget/score string to the accuracy's numeric type.
     def numeric(value)
-      @exact ? self.class.to_rational(value) : Float(value)
+      @exact ? self.class.rational_of(value) : Float(value)
     end
 
     # Exact rational from a cost/budget string, matching fraction.js's decimal handling
     # ("5000" -> 5000, "5000.5" -> 10001/2).
-    def self.to_rational(value)
+    def self.rational_of(value)
       Rational(value.to_s)
     rescue ArgumentError
       Float(value).to_r

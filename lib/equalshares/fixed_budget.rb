@@ -23,8 +23,8 @@ module Equalshares
             report_details: false, progress: nil)
       case params.accuracy
       when "fractions"
-        cost = cost_source.transform_values { |c| Election.to_rational(c) }
-        b_total = Election.to_rational(budget_source)
+        cost = cost_source.transform_values { |c| Election.rational_of(c) }
+        b_total = Election.rational_of(budget_source)
       when "floats"
         cost = cost_source.transform_values { |c| Float(c) }
         b_total = Float(budget_source)
